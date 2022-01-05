@@ -14,6 +14,9 @@ type StorePixelArgs =  {
 }[];
 
 export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Promise<void> {
+
+  logger.info("I WAS HERE")
+
   const id = `${event.hash}`
   const price = event.args[0].price?.toBigInt()
   const pixelInputs = event.args[0].pixelInputs

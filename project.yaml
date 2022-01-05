@@ -17,17 +17,19 @@ network:
 
 dataSources:
   - kind: substrate/Moonbeam
-    startBlock: 1231254
+    startBlock: 1231255
     processor:
       file: './node_modules/@subql/contract-processors/dist/moonbeam.js'
       options:
-        abi: blockplace
+        abi: contract
         address: '0x332cbD58f20325C81fe834d530D0B6C51Ff319D8'
     assets:
-      blockplace:
+      contract:
         file: './blockplace.abi.json'
     mapping:
       file: './dist/index.js'
       handlers:
         - handler: handleStorePixels
           kind: substrate/MoonbeamCall
+          filter:
+            function: storePixels((uint256,uint256,uint16)[])
