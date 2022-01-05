@@ -31,5 +31,3 @@ dataSources:
       handlers:
         - handler: handleStorePixels
           kind: substrate/MoonbeamCall
-          filter:
-            function: storePixels(tuple[])
