@@ -22,7 +22,7 @@ dataSources:
       file: './node_modules/@subql/contract-processors/dist/moonbeam.js'
       options:
         abi: blockplace
-        address: '0x44ddD2EC5BE2A7f3e4A465C21600bE8df644093f'
+        address: '0x332cbD58f20325C81fe834d530D0B6C51Ff319D8'
     assets:
       blockplace:
         file: './blockplace.abi.json'
