@@ -1,0 +1,35 @@
+specVersion: "0.2.0"
+
+name: "Blockplace"
+version: "1.0.0"
+description: "Blockplace Transactions"
+repository: "https://github.com/boostdmg01/moonbeans-bot"
+
+schema:
+  file: "./schema.graphql"
+
+network:
+  genesisHash: '0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b' # Genesis hash of Moonriver
+  endpoint: wss://moonriver.api.onfinality.io/public-ws
+
+  chaintypes:
+    file: "./types.yaml"
+
+dataSources:
+  - kind: substrate/Moonbeam
+    startBlock: 1231254
+    processor:
+      file: './node_modules/@subql/contract-processors/dist/moonbeam.js'
+      options:
+        abi: blockplace
+        address: '0x44ddD2EC5BE2A7f3e4A465C21600bE8df644093f'
+    assets:
+      blockplace:
+        file: './blockplace.abi.json'
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        - handler: handleStorePixels
+          kind: substrate/MoonbeamCall
+          filter:
+            function: storePixels(tuple[])
