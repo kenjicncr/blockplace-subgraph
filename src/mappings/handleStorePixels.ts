@@ -14,11 +14,6 @@ type StorePixelArgs =  {
 }[];
 
 export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Promise<void> {
-  let transaction = await Transaction.get(event.hash);
-    if (!event.success || typeof transaction !== 'undefined') {
-        return;
-    }
-
   const id = `${event.hash}`
   const price = event.args[0].price?.toBigInt()
   const pixelInputs = event.args[0].pixelInputs
