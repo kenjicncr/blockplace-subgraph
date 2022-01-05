@@ -8,18 +8,36 @@ type PixelInput = {
   color: number;
 }
 
-type StorePixelArgs =  {
-  price: BigNumber;
-  pixelInputs: PixelInput[]
-}[];
+
+type StorePixelArgs = [Array<any>] & {
+  pixelInputs: Array<any>
+};
+
+type BidPlacedCallrgs = [string, BigNumber, BigNumber] & { ca: string; tokenId: BigNumber; price: BigNumber; };
 
 export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Promise<void> {
-
+  logger.info(event.success)
   logger.info("I WAS HERE")
 
   const id = `${event.hash}`
-  const price = event.args[0].price?.toBigInt()
-  const pixelInputs = event.args[0].pixelInputs
+  const { success } = event
+  // const price = event.args[0].price?.toBigInt()
+
+  // this is a proxy
+  const color = event.args.pixelInputs[0][2]
+
+  let pixelInputs = []
+
+  for (let step = 0; step < event.args.pixelInputs.length; step++) {
+    // Runs 5 times, with values of step 0 through 4.
+
+    const _pixelInput = event.args.pixelInputs[step]
+    pixelInputs.push({
+      bucket: _pixelInput[0].toString(),
+      posInBucket: _pixelInput[1],
+      color: _pixelInput[2],
+    })
+  }
 
   const bucketsPromises = pixelInputs.map((pixelInput) => {
     const bucketId = `${pixelInput.bucket}`
@@ -29,12 +47,15 @@ export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Pr
 
   const resolvedBuckets = await Promise.all(bucketsPromises)
 
-  resolvedBuckets.map(async (resolvedBucket, id) => {
+  for (let step = 0; step < resolvedBuckets.length; step++) {
     // we match the resolvedBucket with pixelInput
-    const pixelInput = pixelInputs[id]
+
+    const resolvedBucket = resolvedBuckets[step]
+    const pixelInput = pixelInputs[step]
     const bucketId = `${pixelInput.bucket}`
 
-    if(typeof resolvedBucket === undefined) {
+    if(!resolvedBucket) {
+      // logger.info(`ADDED BUCKET #${bucketId}`)
       // bucket doesn't exist create a bucket
       let bucket = new Bucket(bucketId)
       bucket.id = bucketId
@@ -47,7 +68,6 @@ export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Pr
       bucket.pixels = pixels
 
       logger.info(`ADDED BUCKET #${bucketId}`)
-
       await bucket.save()
     } else {
       // bucket exists
@@ -58,5 +78,5 @@ export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Pr
       logger.info(`UPDATED BUCKET #${bucketId}`)
       await resolvedBucket.save()
     }
-  })
+  }
 }
