@@ -2,18 +2,16 @@ import { Bucket, Transaction } from '../types'
 import { MoonbeamCall } from '@subql/contract-processors/dist/moonbeam';
 import { BigNumber } from "ethers";
 
-type PixelInput = {
-  bucket: number;
-  posInBucket: number;
-  color: number;
+type BucketArray = {
+  [bucketIndex: number]: number[];
 }
-
 
 type StorePixelArgs = [Array<any>] & {
   pixelInputs: Array<any>
 };
 
-type BidPlacedCallrgs = [string, BigNumber, BigNumber] & { ca: string; tokenId: BigNumber; price: BigNumber; };
+// type BidPlacedCallrgs = [string, BigNumber, BigNumber] & { ca: string; tokenId: BigNumber; price: BigNumber; };
+const groupByKey = (list, key) => list.reduce((hash, obj) => ({...hash, [obj[key]]:( hash[obj[key]] || [] ).concat(obj)}), {})
 
 export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Promise<void> {
   logger.info(event.success)
@@ -38,45 +36,47 @@ export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Pr
       color: _pixelInput[2],
     })
   }
+  
+  const bucketArr: BucketArray = {};
+  const bucketLength = 16;
 
-  const bucketsPromises = pixelInputs.map((pixelInput) => {
+  for(let i = 0; i < pixelInputs.length; i++) {
+    const input = pixelInputs[i]
+
+    if (bucketArr[input.bucket] == null || bucketArr[input.bucket].length <= 0)
+    bucketArr[input.bucket] = Array<number>(bucketLength).fill(-1);
+
+    bucketArr[input.bucket][input.posInBucket] = input.color;
+  }
+  
+
+  const bucketsPromises = pixelInputs.map(async (pixelInput) => {
     const bucketId = `${pixelInput.bucket}`
 
-    return Bucket.get(bucketId)
+    const bucket = await Bucket.get(bucketId)
+ 
+     if(!bucket) {
+       // logger.info(`ADDED BUCKET #${bucketId}`)
+       // bucket doesn't exist create a bucket
+       let bucket = new Bucket(bucketId)
+       bucket.id = bucketId
+       bucket.position = pixelInput.bucket
+       // grab the pixel array from bucketArr
+       bucket.pixels = bucketArr[pixelInput.bucket]
+ 
+       await bucket.save()
+       logger.info(`ADDED BUCKET #${bucket.position}, With pixels ${bucket.pixels}`)
+ 
+     } else {
+       // bucket exists
+ 
+       // update the pixels array with the corresponding color position
+       bucket.pixels[pixelInput.posInBucket] = pixelInput.color
+       
+       logger.info(`UPDATED BUCKET #${bucketId}`)
+       await bucket.save()
+     }
   })
 
-  const resolvedBuckets = await Promise.all(bucketsPromises)
-
-  for (let step = 0; step < resolvedBuckets.length; step++) {
-    // we match the resolvedBucket with pixelInput
-
-    const resolvedBucket = resolvedBuckets[step]
-    const pixelInput = pixelInputs[step]
-    const bucketId = `${pixelInput.bucket}`
-
-    if(!resolvedBucket) {
-      // logger.info(`ADDED BUCKET #${bucketId}`)
-      // bucket doesn't exist create a bucket
-      let bucket = new Bucket(bucketId)
-      bucket.id = bucketId
-      bucket.position = pixelInput.bucket
-
-      // create an array of empty pixels
-      let pixels = new Array(16).fill(0);
-      // update the color
-      pixels[pixelInput.posInBucket] = pixelInput.color
-      bucket.pixels = pixels
-
-      logger.info(`ADDED BUCKET #${bucketId}`)
-      await bucket.save()
-    } else {
-      // bucket exists
-
-      // update the pixels array with the corresponding color position
-      resolvedBucket.pixels[pixelInput.posInBucket] = pixelInput.color
-      
-      logger.info(`UPDATED BUCKET #${bucketId}`)
-      await resolvedBucket.save()
-    }
-  }
+  await Promise.all(bucketsPromises)
 }
