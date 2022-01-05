@@ -32,4 +32,4 @@ dataSources:
         - handler: handleStorePixels
           kind: substrate/MoonbeamCall
           filter:
-            function: storePixels(uint256,uint256,uint16)[]
+            function: storePixels(tuple[])
