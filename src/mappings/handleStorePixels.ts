@@ -10,9 +10,6 @@ type StorePixelArgs = [Array<any>] & {
   pixelInputs: Array<any>
 };
 
-// type BidPlacedCallrgs = [string, BigNumber, BigNumber] & { ca: string; tokenId: BigNumber; price: BigNumber; };
-const groupByKey = (list, key) => list.reduce((hash, obj) => ({...hash, [obj[key]]:( hash[obj[key]] || [] ).concat(obj)}), {})
-
 export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Promise<void> {
   logger.info(event.success)
   logger.info("I WAS HERE")
@@ -44,7 +41,7 @@ export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Pr
     const input = pixelInputs[i]
 
     if (bucketArr[input.bucket] == null || bucketArr[input.bucket].length <= 0)
-    bucketArr[input.bucket] = Array<number>(bucketLength).fill(-1);
+    bucketArr[input.bucket] = Array<number>(bucketLength).fill(0);
 
     bucketArr[input.bucket][input.posInBucket] = input.color;
   }
@@ -69,9 +66,7 @@ export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Pr
  
      } else {
        // bucket exists
- 
-       // update the pixels array with the corresponding color position
-       bucket.pixels[pixelInput.posInBucket] = pixelInput.color
+       bucket.pixels = bucketArr[pixelInput.bucket]
        
        logger.info(`UPDATED BUCKET #${bucketId}`)
        await bucket.save()
