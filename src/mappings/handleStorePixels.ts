@@ -66,9 +66,27 @@ export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Pr
  
      } else {
        // bucket exists
-       bucket.pixels = bucketArr[pixelInput.bucket]
+      
+       let oldPixels = bucket.pixels
+       let newPixels = bucketArr[pixelInput.bucket]
+
+       let combinedPixels = []
+
+       for(let i = 0; i < bucket.pixels.length; i++) {
+         const newPixel = newPixels[i]
+
+         // if position is 0, it means no need to override
+         // and save the old one
+         if(newPixel === 0) {
+           combinedPixels[i] = oldPixels[i]
+         } else {
+           combinedPixels[i] = newPixels[i]
+         }
+       }
+
+       bucket.pixels = combinedPixels
        
-       logger.info(`UPDATED BUCKET #${bucketId}`)
+       logger.info(`UPDATED BUCKET #${bucketId}: New Array: ${combinedPixels}`)
        await bucket.save()
      }
   })
