@@ -12,10 +12,10 @@ type StorePixelArgs = [Array<any>] & {
 
 export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Promise<void> {
   logger.info(event.success)
-  logger.info("I WAS HERE")
 
   const id = `${event.hash}`
   const { success } = event
+  if(!success) return
   // const price = event.args[0].price?.toBigInt()
 
   // this is a proxy
@@ -60,6 +60,7 @@ export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Pr
        bucket.position = pixelInput.bucket
        // grab the pixel array from bucketArr
        bucket.pixels = bucketArr[pixelInput.bucket]
+       bucket.lastBlockUpdated = event.blockNumber
  
        await bucket.save()
        logger.info(`ADDED BUCKET #${bucket.position}, With pixels ${bucket.pixels}`)
@@ -85,6 +86,9 @@ export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Pr
        }
 
        bucket.pixels = combinedPixels
+       
+       // update block #
+       bucket.lastBlockUpdated = event.blockNumber
        
        logger.info(`UPDATED BUCKET #${bucketId}: New Array: ${combinedPixels}`)
        await bucket.save()

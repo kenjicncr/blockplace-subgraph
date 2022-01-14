@@ -28,6 +28,8 @@ type Bucket @entity {
   position: Int!
 
   pixels: [Int!]
+
+  lastBlockUpdated: Int!
 }
 
 
