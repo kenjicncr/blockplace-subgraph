@@ -17,12 +17,12 @@ network:
 
 dataSources:
   - kind: substrate/Moonbeam
-    startBlock: 1231255
+    startBlock: 1330266
     processor:
       file: './node_modules/@subql/contract-processors/dist/moonbeam.js'
       options:
         abi: contract
-        address: '0x332cbD58f20325C81fe834d530D0B6C51Ff319D8'
+        address: '0xDf8F13F5D2289216E77548470bdCC80286AB5744'
     assets:
       contract:
         file: './blockplace.abi.json'
