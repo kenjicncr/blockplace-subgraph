@@ -35,7 +35,7 @@ export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Pr
   }
   
   const bucketArr: BucketArray = {};
-  const bucketLength = 1024;
+  const bucketLength = 512;
 
   for(let i = 0; i < pixelInputs.length; i++) {
     const input = pixelInputs[i]
