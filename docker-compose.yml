@@ -25,8 +25,8 @@ services:
       - ./:/app
     command:
       - -f=/app
-      - --schema=blockplace-subgraph
       - --force-clean
+      - --schema="app"
       - --batch-size=300
 
   graphql-engine:
@@ -44,6 +44,6 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
     command:
-      - --name=blockplace-subgraph
+      - --name="app"
       - --playground
       - --indexer=http://subquery-node:3000
