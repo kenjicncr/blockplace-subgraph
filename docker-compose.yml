@@ -25,9 +25,8 @@ services:
       - ./:/app
     command:
       - -f=/app
-      - --force-clean
       - --schema="app"
-      - --batch-size=300
+      - --batch-size=100
 
   graphql-engine:
     image: onfinality/subql-query:latest
@@ -45,5 +44,6 @@ services:
       DB_PORT: 5432
     command:
       - --name="app"
+      - --unsafe
       - --playground
       - --indexer=http://subquery-node:3000
