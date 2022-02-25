@@ -24,7 +24,7 @@
     "typescript": "^4.4.4"
   },
   "dependencies": {
-    "@subql/contract-processors": "^0.5.1",
+    "@subql/contract-processors": "^0.5.2",
     "@subql/types": "latest",
     "ethers": "^5.5.0"
   }

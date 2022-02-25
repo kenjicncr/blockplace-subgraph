@@ -1,4 +1,4 @@
-import { Bucket, Transaction } from '../types'
+import { Account, Bucket, Charity, Transaction } from '../types'
 import { MoonbeamCall } from '@subql/contract-processors/dist/moonbeam';
 import { BigNumber } from "ethers";
 
@@ -13,19 +13,46 @@ type StorePixelArgs = [Array<any>] & {
 
 export async function handleStorePixels(event: MoonbeamCall<StorePixelArgs>): Promise<void> {
   logger.info(event.success)
-
+  logger.info(event.args._id)
   const id = `${event.hash}`
   const { success } = event
   if(!success) return
   // const price = event.args[0].price?.toBigInt()
 
-  // this is a proxy
-  const color = event.args.pixelInputs[0][2]
+  let totalPixelCount = event.args.pixelInputs.length
+
+  // Save account
+  let accountAddress = event.from
+
+  let account = await Account.get(accountAddress)
+
+  if(!account) {
+    account = new Account(accountAddress)
+    account.address = accountAddress
+    account.totalPixelsPlaced = totalPixelCount
+    await account.save()
+  } else {
+    account.totalPixelsPlaced = account.totalPixelsPlaced + totalPixelCount
+    await account.save()
+  }
+
+  // Save charity
+  let charityId = event.args._id.toString()
+  let charity = await Charity.get(charityId)
+
+  if(!charity) {
+    charity = new Charity(charityId)
+    charity.name = charityId
+    charity.totalPixelsReceived = totalPixelCount
+    await charity.save()
+  } else {
+    charity.totalPixelsReceived = totalPixelCount + charity.totalPixelsReceived
+    await charity.save()
+  }
 
   let pixelInputs = []
 
   for (let step = 0; step < event.args.pixelInputs.length; step++) {
-    // Runs 5 times, with values of step 0 through 4.
 
     const _pixelInput = event.args.pixelInputs[step]
     pixelInputs.push({

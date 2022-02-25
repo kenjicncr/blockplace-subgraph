@@ -32,6 +32,22 @@ type Bucket @entity {
   lastBlockUpdated: Int!
 }
 
+type Account @entity {
+  id: ID!
+
+  address: String!
+
+  totalPixelsPlaced: Int!
+}
+
+type Charity @entity {
+  id: ID!
+
+  name: String!
+
+  totalPixelsReceived: Int!
+}
+
 
 type Approval @entity {
   id: ID! # Transaction hash
